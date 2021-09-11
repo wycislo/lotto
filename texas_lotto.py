@@ -37,8 +37,7 @@ cur.execute('drop table if exists lotto_stage')
 cur.execute(sqlCreateTable)
 conn.commit()
 
-print ('connection successful')
-conn.close()
+
 
 
 tx_lotto_data = 'https://www.texaslottery.com/export/sites/lottery/Games/Lotto_Texas/Winning_Numbers/lottotexas.csv'
@@ -54,8 +53,24 @@ engine = create_engine(f'postgresql://{DB_USER}:{DB_PASS}@{DB_HOST}:5432/lotto')
 # load df to database
 df.to_sql('lotto_stage',engine,index=False,if_exists='append')
 
+# create tx_lotto table and combine date into date column
+
+sqlCreateTable = ("""create table tx_lotto (game_date date, num1 numeric(2,0), 
+num2 numeric(2,0), num3 numeric(2,0),num4 numeric(2,0),num5 numeric(2,0),num6 numeric(2,0))""")
+
+cur = conn.cursor()
+cur.execute('drop table if exists tx_lotto')
+cur.execute(sqlCreateTable)
+conn.commit()
+
+sqlMergeData = 'insert into tx_lotto (game_date,num1,num2,num3,num4,num5,num6) \
+select format (%s-%s-%s, draw_year,draw_mon,draw_day)::date, \
+		num1,num2,num3,num4,num5,num6 from lotto_stage;'
+
+cur.execute(sqlMergeData)
+conn.commit()
 
 
-
-
+print ('connection successful')
+conn.close()
 
