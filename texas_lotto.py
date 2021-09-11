@@ -23,6 +23,8 @@ DB_NAME = os.getenv('DB_NAME')
 DB_USER = os.getenv('DB_USER')
 DB_PASS = os.getenv('DB_PASS')
 
+# print(DB_PASS)
+
 conn = psycopg2.connect(dbname=DB_NAME, user = DB_USER, 
 password = DB_PASS, host = DB_HOST)
 
@@ -39,7 +41,6 @@ print ('connection successful')
 conn.close()
 
 
-
 tx_lotto_data = 'https://www.texaslottery.com/export/sites/lottery/Games/Lotto_Texas/Winning_Numbers/lottotexas.csv'
 
 cols = ['game_name','draw_mon','draw_day','draw_year','num1','num2','num3','num4','num5','num6']
@@ -47,7 +48,8 @@ cols = ['game_name','draw_mon','draw_day','draw_year','num1','num2','num3','num4
 df = pd.read_csv(tx_lotto_data,names = cols)
 
 # sqlachemy
-engine = create_engine('postgresql://postgres:samurai@localhost:5432/lotto')
+
+engine = create_engine(f'postgresql://{DB_USER}:{DB_PASS}@{DB_HOST}:5432/lotto')
 
 # load df to database
 df.to_sql('lotto_stage',engine,index=False,if_exists='append')
